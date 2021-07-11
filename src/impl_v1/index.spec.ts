@@ -66,14 +66,14 @@ describe('integration', () => {
     await delay(10)
 
     // res when the settings are set
-    const setRes = await appSettings.set('testPC', 1, 'a', 1000)
+    const setRes = await appSettings.set('testPC', 1, '{a,b}', 1000)
     await delay(10)
     expect(settingsSub).toHaveBeenCalledTimes(2)
     expect(setRes).toStrictEqual({ response: 'noResponse', missingPeers: ['testPC'] })
 
     // get settings now
     const settingsGet = await appSettings.get('testPC')
-    expect(settingsGet).toStrictEqual({ a: 0, b: 0 })
+    expect(settingsGet).toStrictEqual({ a: 1, b: 1 })
     await delay(10)
 
     // check if settings are updated

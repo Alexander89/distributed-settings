@@ -1,5 +1,6 @@
 import { Fish, FishId, Tag, Tags } from '@actyx/pond'
 import { Schema } from '../..'
+import bEx from 'brace-expansion'
 
 type SettingsState<T> =
   | {
@@ -188,6 +189,24 @@ export const AppSettingsTwins = {
           return state
         case 'settingsConfigSetPartial':
           if (state.defined) {
+            const scopes = bEx(event.scope)
+            // console.log('set partial ', scopes, event.value)
+            scopes.forEach((scope) => {
+              let settingsPtr: any = state.config
+              const path = scope.split('.')
+              const last = path.pop()
+              for (const prop of path) {
+                const next = settingsPtr[prop]
+                if (next) {
+                  settingsPtr = next
+                } else {
+                  break
+                }
+              }
+              if (settingsPtr && last) {
+                settingsPtr[last] = event.value
+              }
+            })
             state.version += 1
           }
           return state
