@@ -13,22 +13,22 @@ export const getCurrentState = <S, E>(actyx: Pond, fish: Fish<S, E>): Promise<S>
     )
   })
 
-export const collectPeerVersionsOnce = async <T>(
-  parsedPeers: string[],
-  actyx: Pond,
-  appId: string,
-) =>
-  (
-    await Promise.all(
-      parsedPeers.map<Promise<{ [peer: string]: number | undefined }>>((peer) =>
-        getCurrentState(actyx, AppSettingsTwins.peer<T>({ appId, peer }))
-          .then((state) => ({ [peer]: state.defined ? state.version : undefined }))
-          .catch(() => ({ [peer]: undefined })),
+export const collectPeerVersionsOnce = async (parsedPeers: string[], actyx: Pond, appId: string) =>
+  getCurrentState(actyx, AppSettingsTwins.app(appId))
+    .then((apps) =>
+      parsedPeers.reduce<{ [peer: string]: number | undefined }>(
+        (acc, v) => ({ ...acc, [v]: apps.peers[v] }),
+        {},
       ),
     )
-  ).reduce((acc, p) => ({ ...acc, ...p }), {})
+    .catch(() =>
+      parsedPeers.reduce<{ [peer: string]: number | undefined }>(
+        (acc, v) => ({ ...acc, [v]: undefined }),
+        {},
+      ),
+    )
 
-export const collectPeerVersions = <T>(
+export const collectPeerVersions = (
   parsedPeers: string[],
   actyx: Pond,
   appId: string,
@@ -39,16 +39,15 @@ export const collectPeerVersions = <T>(
   const checkMode = (values: Record<string, number | undefined>, peers: string[]): Mode =>
     Object.keys(values).length === peers.length ? 'live' : 'collecting'
 
-  const cancels = parsedPeers.map((peer) =>
-    actyx.observe(AppSettingsTwins.peer<T>({ appId, peer }), (state) => {
-      values[peer] = state.defined ? state.version : undefined
-      if (checkMode(values, parsedPeers) === 'live') {
-        cb(values)
-      }
-    }),
-  )
-
-  return () => cancels.forEach((c) => c())
+  return actyx.observe(AppSettingsTwins.app(appId), (apps) => {
+    const values = parsedPeers.reduce<{ [peer: string]: number | undefined }>(
+      (acc, v) => ({ ...acc, [v]: apps.peers[v] }),
+      {},
+    )
+    if (checkMode(values, parsedPeers) === 'live') {
+      cb(values)
+    }
+  })
 }
 
 export type PeerVersion = Record<string, number | undefined>
@@ -102,7 +101,7 @@ export const checkForUpdate = (
     }, timeout)
 
     cancelCollectPeerVersions = collectPeerVersions(peers, actyx, appId, (newState) => {
-      console.log(peers, appId, currentState, newState)
+      // console.log(peers, appId, currentState, newState)
       lastUpdatesState = newState
       if (allLargerThan(sub(newState, currentState), 0)) {
         res({

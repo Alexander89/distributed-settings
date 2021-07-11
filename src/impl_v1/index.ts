@@ -57,7 +57,7 @@ const appSettings =
         throw new Error('setting not valide for all peers: ' + JSON.stringify(res))
       }
       const peers = await listPeers()
-      const currentState = await collectPeerVersionsOnce<T>(peers, actyx, appId)
+      const currentState = await collectPeerVersionsOnce(peers, actyx, appId)
       AppSettingsTwins.emitSettingsConfigDefine(
         actyx.emit,
         appId,
@@ -109,8 +109,7 @@ const appSettings =
       const parsedPeers = parsePeersParam(peers)
       // const parsedScope = scope ? bEx(scope) : undefined
 
-      const currentState = await collectPeerVersionsOnce<T>(parsedPeers, actyx, appId)
-      console.log('set', parsedPeers, scope, currentState)
+      const currentState = await collectPeerVersionsOnce(parsedPeers, actyx, appId)
 
       parsedPeers.forEach((peer) =>
         scope
@@ -127,7 +126,7 @@ const appSettings =
     ): Promise<PeerResponse> => {
       const parsedPeers = parsePeersParam(peers)
       const parsedScope = scope ? bEx(scope) : undefined
-      const currentState = await collectPeerVersionsOnce<T>(parsedPeers, actyx, appId)
+      const currentState = await collectPeerVersionsOnce(parsedPeers, actyx, appId)
       console.log('unset', parsedPeers, parsedScope)
       return checkForUpdate(actyx, appId, currentState, timeout)
     }

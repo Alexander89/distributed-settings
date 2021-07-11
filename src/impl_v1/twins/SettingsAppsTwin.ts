@@ -14,7 +14,7 @@ type SettingsState<T> =
     }
 
 type AppsState = {
-  peers: Record<string, string>
+  peers: Record<string, number>
   schema: any
   defaultSettings: any[]
   migrations: any[]
@@ -151,7 +151,7 @@ export const AppSettingsTwins = {
     onEvent: (state, event) => {
       switch (event.eventType) {
         case 'settingsConfigApplied':
-          state.peers[event.peer] = `${event.version}`
+          state.peers[event.peer] = event.version
           return state
       }
       return state

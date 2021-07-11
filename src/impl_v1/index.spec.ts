@@ -65,9 +65,9 @@ describe('integration', () => {
     await delay(10)
 
     // res when the settings are set
-    const setRes = await appSettings.set('testPC', 1, 'a', 10000)
+    const setRes = await appSettings.set('testPC', 1, 'a', 1000)
     await delay(10)
     expect(settingsSub).toHaveBeenCalledTimes(2)
-    expect(setRes).toStrictEqual({ response: 'succeeded', updatedPeers: [] })
+    expect(setRes).toStrictEqual({ response: 'noResponse', missingPeers: ['testPC'] })
   }, 10000)
 })

@@ -2,6 +2,7 @@ import { Pond, Tags } from '@actyx/pond'
 import {
   AppSettingsTwins,
   settingsAppTagFn,
+  SettingsConfigAppliedEvent,
   SettingsConfigDefineEvent,
   SettingsConfigSetEvent,
   SettingsConfigSetPartialEvent,
@@ -75,9 +76,12 @@ describe('utils', () => {
     actyx.directlyPushEvents([
       mkDefineEvent(0, appId),
       mkSetEvent(1, appId, 'test1', 'Set'),
-      mkSetEvent(2, appId, 'test2', 'Set'),
+      mkAppliedEvent(2, appId, 'test1', 2),
       mkSetEvent(3, appId, 'test2', 'Set'),
-      mkSetPartialEvent(4, appId, 'test2', 'test.scope', 'value'),
+      mkSetEvent(4, appId, 'test2', 'Set'),
+      mkAppliedEvent(5, appId, 'test2', 3),
+      mkSetPartialEvent(6, appId, 'test2', 'test.scope', 'value'),
+      mkAppliedEvent(7, appId, 'test2', 4),
     ])
 
     const versions = await new Promise((res) => {
@@ -109,8 +113,12 @@ describe('utils', () => {
 
     actyx.directlyPushEvents([
       mkDefineEvent(0, appId),
-      mkSetEvent(1, appId, 'test1', 'Set'),
-      mkSetEvent(2, appId, 'test2', 'Set'),
+      mkAppliedEvent(1, appId, 'test1', 1),
+      mkAppliedEvent(2, appId, 'test2', 1),
+      mkSetEvent(3, appId, 'test1', 'Set'),
+      mkAppliedEvent(4, appId, 'test1', 2),
+      mkSetEvent(5, appId, 'test2', 'Set'),
+      mkAppliedEvent(6, appId, 'test2', 2),
     ])
 
     const res = await collectPeerVersionsOnce(['test1', 'test2'], actyx, appId)
@@ -157,15 +165,19 @@ describe('utils', () => {
     actyx.directlyPushEvents([
       mkDefineEvent(0, appId),
       mkSetEvent(1, appId, 'test1', 'Set'),
+      mkAppliedEvent(3, appId, 'test1', 2),
       mkSetEvent(2, appId, 'test2', 'Set'),
+      mkAppliedEvent(4, appId, 'test2', 2),
     ])
 
     const res = await collectPeerVersionsOnce(['test1', 'test2'], actyx, appId)
     expect(res).toStrictEqual({ test1: 2, test2: 2 })
 
     actyx.directlyPushEvents([
-      mkSetEvent(3, appId, 'test1', 'Set'),
-      mkSetEvent(4, appId, 'test2', 'Set'),
+      mkSetEvent(5, appId, 'test1', 'Set'),
+      mkAppliedEvent(6, appId, 'test1', 3),
+      mkSetEvent(7, appId, 'test2', 'Set'),
+      mkAppliedEvent(8, appId, 'test2', 3),
     ])
 
     const res2 = await checkForUpdate(actyx, appId, res, 1000)
@@ -196,7 +208,9 @@ describe('utils', () => {
     actyx.directlyPushEvents([
       mkDefineEvent(0, appId),
       mkSetEvent(1, appId, 'test1', 'Set'),
-      mkSetEvent(2, appId, 'test2', 'Set'),
+      mkAppliedEvent(2, appId, 'test1', 2),
+      mkSetEvent(3, appId, 'test2', 'Set'),
+      mkAppliedEvent(4, appId, 'test2', 2),
     ])
 
     const res = await collectPeerVersionsOnce(['test1', 'test2'], actyx, appId)
@@ -216,13 +230,18 @@ describe('utils', () => {
     actyx.directlyPushEvents([
       mkDefineEvent(0, appId),
       mkSetEvent(1, appId, 'test1', 'Set'),
-      mkSetEvent(2, appId, 'test2', 'Set'),
+      mkAppliedEvent(2, appId, 'test1', 2),
+      mkSetEvent(3, appId, 'test2', 'Set'),
+      mkAppliedEvent(4, appId, 'test2', 2),
     ])
 
     const res = await collectPeerVersionsOnce(['test1', 'test2'], actyx, appId)
     expect(res).toStrictEqual({ test1: 2, test2: 2 })
 
-    actyx.directlyPushEvents([mkSetEvent(3, appId, 'test1', 'Set')])
+    actyx.directlyPushEvents([
+      mkSetEvent(5, appId, 'test1', 'Set'),
+      mkAppliedEvent(6, appId, 'test1', 3),
+    ])
 
     const res2 = await checkForUpdate(actyx, appId, res, 1000)
     expect(res2).toStrictEqual({
@@ -284,6 +303,20 @@ const mkSetPartialEvent = <T>(
     scope,
     value,
   } as SettingsConfigSetPartialEvent,
+})
+
+const mkAppliedEvent = <T>(i: number, appId: string, peer: string, version: number) => ({
+  lamport: i,
+  offset: i,
+  stream: 'a',
+  tags: toStringArray(settingsAppTagFn(appId)),
+  timestamp: Date.now(),
+  payload: {
+    eventType: 'settingsConfigApplied',
+    appId,
+    peer,
+    version,
+  } as SettingsConfigAppliedEvent,
 })
 
 const toStringArray = (t: Tags<any>) =>
