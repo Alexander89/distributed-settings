@@ -27,14 +27,16 @@ export const Settings: SettingsFactory = (actyx: Pond): SettingsType => {
 const appSettings =
   (actyx: Pond) =>
   <T>(appId: string): AppSettings<T> => {
-    const listPeers = (): Promise<string[]> =>
+    const listPeers = (): Promise<string[]> => listPeerVersions().then(Object.keys)
+
+    const listPeerVersions = (): Promise<Record<string, number>> =>
       new Promise((res, rej) => {
         const done = actyx.observe(
           AppSettingsTwins.app(appId),
           (state) =>
             setImmediate(() => {
               done()
-              res(Object.keys(state.peers))
+              res(state.peers)
             }),
           rej,
         )
@@ -133,6 +135,7 @@ const appSettings =
 
     return {
       listPeers,
+      listPeerVersions,
       get,
       defineSettings,
       verifySettings,

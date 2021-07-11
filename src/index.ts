@@ -21,6 +21,7 @@ export type PeerResponse = PeerResponseSucceeded | PeerResponsePartial | PeerRes
 
 export type AppSettings<T> = {
   listPeers: () => Promise<ReadonlyArray<string>>
+  listPeerVersions: () => Promise<Record<string, number>>
   getSchema: <T>(peer: string) => Promise<Schema<T> | undefined>
 
   defineSettings: (

@@ -28,6 +28,7 @@ describe('integration', () => {
     expect(appSettings).toHaveProperty('get')
     expect(appSettings).toHaveProperty('getSchema')
     expect(appSettings).toHaveProperty('listPeers')
+    expect(appSettings).toHaveProperty('listPeerVersions')
     expect(appSettings).toHaveProperty('set')
     expect(appSettings).toHaveProperty('subscribe')
     expect(appSettings).toHaveProperty('unset')
@@ -69,5 +70,14 @@ describe('integration', () => {
     await delay(10)
     expect(settingsSub).toHaveBeenCalledTimes(2)
     expect(setRes).toStrictEqual({ response: 'noResponse', missingPeers: ['testPC'] })
+
+    // get settings now
+    const settingsGet = await appSettings.get('testPC')
+    expect(settingsGet).toStrictEqual({ a: 0, b: 0 })
+    await delay(10)
+
+    // check if settings are updated
+    const versions = await appSettings.listPeerVersions()
+    expect(versions).toStrictEqual({ testPC: 2 })
   }, 10000)
 })
