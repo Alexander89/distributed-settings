@@ -11,7 +11,7 @@ import bEx from 'brace-expansion'
 import { AppSettingsTwins } from './twins/SettingsAppsTwin'
 import { checkForUpdate, collectPeerVersionsOnce, getCurrentState, parsePeersParam } from './utils'
 
-const defaultTimeout = 15000
+const defaultTimeout = 10000
 
 export const Settings: SettingsFactory = (actyx: Pond): SettingsType => {
   const listApps = (): Promise<string[]> =>
@@ -70,9 +70,9 @@ const appSettings =
       return checkForUpdate(actyx, appId, currentState, timeout)
     }
 
-    const getSchema = <T>(peer: string): Promise<Schema<T> | undefined> =>
-      getCurrentState(actyx, AppSettingsTwins.peer<T>({ appId, peer }))
-        .then((state) => (state.defined ? state.schema : undefined))
+    const getSchema = <T>(): Promise<Schema<T> | undefined> =>
+      getCurrentState(actyx, AppSettingsTwins.app<T>(appId))
+        .then((state) => state.schema)
         .catch(() => undefined)
 
     const subscribe = <T>(
@@ -121,6 +121,7 @@ const appSettings =
 
       return checkForUpdate(actyx, appId, currentState, timeout)
     }
+
     const unset = async (
       peers: string | string[],
       scope: string,

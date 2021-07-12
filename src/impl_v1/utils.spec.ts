@@ -180,7 +180,7 @@ describe('utils', () => {
       mkAppliedEvent(8, appId, 'test2', 3),
     ])
 
-    const res2 = await checkForUpdate(actyx, appId, res, 1000)
+    const res2 = await checkForUpdate(actyx, appId, res, 100)
     expect(res2).toStrictEqual({
       response: 'succeeded',
       updatedPeers: ['test1', 'test2'],
@@ -194,7 +194,7 @@ describe('utils', () => {
     const res = await collectPeerVersionsOnce([], actyx, appId)
     expect(res).toStrictEqual({})
 
-    const res2 = await checkForUpdate(actyx, appId, res, 1000)
+    const res2 = await checkForUpdate(actyx, appId, res, 100)
     expect(res2).toStrictEqual({
       response: 'noResponse',
       missingPeers: [],
@@ -216,7 +216,7 @@ describe('utils', () => {
     const res = await collectPeerVersionsOnce(['test1', 'test2'], actyx, appId)
     expect(res).toStrictEqual({ test1: 2, test2: 2 })
 
-    const res2 = await checkForUpdate(actyx, appId, res, 1000)
+    const res2 = await checkForUpdate(actyx, appId, res, 100)
     expect(res2).toStrictEqual({
       response: 'noResponse',
       missingPeers: ['test1', 'test2'],
@@ -243,7 +243,7 @@ describe('utils', () => {
       mkAppliedEvent(6, appId, 'test1', 3),
     ])
 
-    const res2 = await checkForUpdate(actyx, appId, res, 1000)
+    const res2 = await checkForUpdate(actyx, appId, res, 100)
     expect(res2).toStrictEqual({
       response: 'partial',
       missingPeers: ['test2'],

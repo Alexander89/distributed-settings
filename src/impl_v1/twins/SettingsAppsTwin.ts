@@ -1,6 +1,7 @@
 import { Fish, FishId, Tag, Tags } from '@actyx/pond'
-import { Schema } from '../..'
+import { Migration, Schema } from '../..'
 import bEx from 'brace-expansion'
+import clone from 'clone'
 
 type SettingsState<T> =
   | {
@@ -14,11 +15,11 @@ type SettingsState<T> =
       defined: false
     }
 
-type AppsState = {
+type AppsState<T> = {
   peers: Record<string, number>
-  schema: any
-  defaultSettings: any[]
-  migrations: any[]
+  schema: Schema<T> | undefined
+  defaultSettings: T | undefined
+  migrations: Migration<T> | undefined
 }
 
 export type SettingsConfigAppliedEvent = {
@@ -30,9 +31,9 @@ export type SettingsConfigAppliedEvent = {
 export type SettingsConfigDefineEvent<T> = {
   eventType: 'settingsConfigDefine'
   appId: string
-  schema: any
+  schema: Schema<T>
   defaultSettings: T
-  migration: any
+  migration: Migration<T>
 }
 export type SettingsConfigSetEvent<T> = {
   eventType: 'settingsConfigSet'
@@ -140,13 +141,13 @@ export const AppSettingsTwins = {
     },
   }),
 
-  app: (appId: string): Fish<AppsState, AppEvent<unknown>> => ({
+  app: <T>(appId: string): Fish<AppsState<T>, AppEvent<T>> => ({
     fishId: FishId.of('config.setting.app.appTwin', appId, 0),
     initialState: {
       peers: {},
-      defaultSettings: [],
-      migrations: [],
-      schema: [],
+      defaultSettings: undefined,
+      migrations: undefined,
+      schema: undefined,
     },
     where: settingsAppTagFn(appId),
     onEvent: (state, event) => {
@@ -191,8 +192,9 @@ export const AppSettingsTwins = {
           if (state.defined) {
             const scopes = bEx(event.scope)
             // console.log('set partial ', scopes, event.value)
+            const modConfig = clone(state.config)
             scopes.forEach((scope) => {
-              let settingsPtr: any = state.config
+              let settingsPtr: any = modConfig
               const path = scope.split('.')
               const last = path.pop()
               for (const prop of path) {
@@ -207,6 +209,8 @@ export const AppSettingsTwins = {
                 settingsPtr[last] = event.value
               }
             })
+
+            state.config = modConfig
             state.version += 1
           }
           return state
