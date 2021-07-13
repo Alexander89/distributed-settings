@@ -6,7 +6,18 @@ import { CancelSubscription, Pond } from '@actyx/pond'
 export type SettingsFactory = (actyx: Pond) => Settings
 
 export type Schema<T> = string
-export type Migration<T> = string
+export type MigrationScript<T, C> = (currentSettings: C) => T
+export type Migration =
+  | {
+      type: 'addMissingProperties'
+    }
+  | {
+      type: 'migrationScript'
+      script: string
+    }
+  | {
+      type: 'resetToDefault'
+    }
 
 /**
  * Result if all known peers applied the new settings or definition

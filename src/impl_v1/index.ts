@@ -1,4 +1,4 @@
-import { CancelSubscription, Fish, Pond } from '@actyx/pond'
+import { CancelSubscription, Pond } from '@actyx/pond'
 import {
   Settings as SettingsType,
   AppSettings,
@@ -43,9 +43,9 @@ const appSettings =
       })
 
     const verifySettings = <T>(
-      schema: Schema<T>,
-      defaultSetting: T,
-      migration: unknown,
+      _schema: Schema<T>,
+      _defaultSetting: T,
+      _migration: unknown,
     ): Promise<Record<string, boolean>> => Promise.resolve({})
 
     const defineSettings = async <T>(
@@ -60,13 +60,7 @@ const appSettings =
       }
       const peers = await listPeers()
       const currentState = await collectPeerVersionsOnce(peers, actyx, appId)
-      AppSettingsTwins.emitSettingsConfigDefine(
-        actyx.emit,
-        appId,
-        schema,
-        defaultSetting,
-        migration,
-      )
+      AppSettingsTwins.emitSettingsDefine(actyx.emit, appId, schema, defaultSetting, migration)
       return checkForUpdate(actyx, appId, currentState, timeout)
     }
 
@@ -80,8 +74,8 @@ const appSettings =
       sub: (settings: T | undefined) => boolean,
     ): CancelSubscription =>
       actyx.observe(AppSettingsTwins.peer<T>({ appId, peer }), (state) => {
-        if (sub(state.defined ? state.config : undefined)) {
-          AppSettingsTwins.emitSettingsConfigApplied(
+        if (sub(state.defined ? state.setting : undefined)) {
+          AppSettingsTwins.emitSettingsApplied(
             actyx.emit,
             appId,
             peer,
@@ -94,8 +88,8 @@ const appSettings =
       getCurrentState(actyx, AppSettingsTwins.peer<T>({ appId, peer }))
         .then((state) => {
           if (state.defined) {
-            AppSettingsTwins.emitSettingsConfigApplied(actyx.emit, appId, peer, state.version)
-            return state.config
+            AppSettingsTwins.emitSettingsApplied(actyx.emit, appId, peer, state.version)
+            return state.setting
           } else {
             return undefined
           }
@@ -115,8 +109,8 @@ const appSettings =
 
       parsedPeers.forEach((peer) =>
         scope
-          ? AppSettingsTwins.emitSettingsConfigSetPartial(actyx.emit, appId, peer, scope, value)
-          : AppSettingsTwins.emitSettingsConfigSet(actyx.emit, appId, peer, value),
+          ? AppSettingsTwins.emitSettingsSetPartial(actyx.emit, appId, peer, scope, value)
+          : AppSettingsTwins.emitSettingsSet(actyx.emit, appId, peer, value),
       )
 
       return checkForUpdate(actyx, appId, currentState, timeout)

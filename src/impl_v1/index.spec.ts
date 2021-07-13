@@ -7,7 +7,7 @@ describe('integration', () => {
   it('simple', async () => {
     const actyx = Pond.test()
     const peerName = 'testPC'
-    const settingsSub = jest.fn((s) => true)
+    const settingsSub = jest.fn((_) => true)
 
     // create settings
     const settings = Settings(actyx)
@@ -50,16 +50,24 @@ describe('integration', () => {
 
     // define settings and validate if peers applied them
     const applyDefinitionRes = await appSettings.defineSettings(
-      'Schema{"abc": {i : number, y: text}}',
-      { a: 0, b: 0 },
-      { a: 'a', b: 'a' },
+      JSON.stringify({
+        type: 'object',
+        properties: {
+          a: { type: 'integer' },
+          b: { type: 'integer' },
+        },
+        required: ['a', 'b'],
+        additionalProperties: false,
+      }),
+      { a: 0, b: 1 },
+      { a: 'b', b: 'a' },
     )
     expect(applyDefinitionRes).toStrictEqual({ response: 'succeeded', updatedPeers: ['testPC'] })
 
     // check if update is triggered after settings got defined
     await delay(10)
     expect(settingsSub).toHaveBeenCalledTimes(2)
-    expect(settingsSub).toHaveBeenCalledWith({ a: 0, b: 0 })
+    expect(settingsSub).toHaveBeenCalledWith({ a: 0, b: 1 })
 
     // stop settings subscription
     cancelSub()

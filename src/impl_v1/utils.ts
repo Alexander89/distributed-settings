@@ -34,10 +34,10 @@ export const collectPeerVersions = (
   appId: string,
   cb: (versions: Record<string, number | undefined>) => void,
 ): CancelSubscription => {
-  type Mode = 'live' | 'collecting'
-  let values: Record<string, number | undefined> = {}
-  const checkMode = (values: Record<string, number | undefined>, peers: string[]): Mode =>
-    Object.keys(values).length === peers.length ? 'live' : 'collecting'
+  const checkMode = (
+    values: Record<string, number | undefined>,
+    peers: string[],
+  ): 'live' | 'collecting' => (Object.keys(values).length === peers.length ? 'live' : 'collecting')
 
   return actyx.observe(AppSettingsTwins.app(appId), (apps) => {
     const values = parsedPeers.reduce<{ [peer: string]: number | undefined }>(

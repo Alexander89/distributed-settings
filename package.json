@@ -39,8 +39,9 @@
     "pondVersion": 3
   },
   "dependencies": {
-    "@actyx/pond": "^3",
+    "@actyx/pond": "^3.0.2",
     "@actyx/sdk": "^0.1.2",
+    "ajv": "^6.12.6",
     "clone": "^2.1.2"
   }
 }

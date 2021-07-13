@@ -2,10 +2,10 @@ import { Pond, Tags } from '@actyx/pond'
 import {
   AppSettingsTwins,
   settingsAppTagFn,
-  SettingsConfigAppliedEvent,
-  SettingsConfigDefineEvent,
-  SettingsConfigSetEvent,
-  SettingsConfigSetPartialEvent,
+  SettingsAppliedEvent,
+  SettingsDefineEvent,
+  SettingsSetEvent,
+  SettingsSetPartialEvent,
   settingsDefinitionTagFn,
   settingsPeerTagFn,
 } from './twins/SettingsAppsTwin'
@@ -263,11 +263,11 @@ const mkDefineEvent = (i: number, appId: string) => ({
   timestamp: Date.now(),
   payload: {
     appId,
-    eventType: 'settingsConfigDefine',
-    migration: '{mig}',
+    eventType: 'settingsDefine',
+    migration: {},
     defaultSettings: 'Hello Test',
     schema: '{}',
-  } as SettingsConfigDefineEvent<string>,
+  } as SettingsDefineEvent<string>,
 })
 
 const mkSetEvent = <T>(i: number, appId: string, peer: string, setting: T) => ({
@@ -277,14 +277,14 @@ const mkSetEvent = <T>(i: number, appId: string, peer: string, setting: T) => ({
   tags: toStringArray(settingsPeerTagFn<string>(appId, peer)),
   timestamp: Date.now(),
   payload: {
-    eventType: 'settingsConfigSet',
+    eventType: 'settingsSet',
     appId,
     peer,
     setting,
-  } as SettingsConfigSetEvent<T>,
+  } as SettingsSetEvent<T>,
 })
 
-const mkSetPartialEvent = <T>(
+const mkSetPartialEvent = (
   i: number,
   appId: string,
   peer: string,
@@ -297,26 +297,26 @@ const mkSetPartialEvent = <T>(
   tags: toStringArray(settingsPeerTagFn<string>(appId, peer)),
   timestamp: Date.now(),
   payload: {
-    eventType: 'settingsConfigSetPartial',
+    eventType: 'settingsSetPartial',
     appId,
     peer,
     scope,
     value,
-  } as SettingsConfigSetPartialEvent,
+  } as SettingsSetPartialEvent,
 })
 
-const mkAppliedEvent = <T>(i: number, appId: string, peer: string, version: number) => ({
+const mkAppliedEvent = (i: number, appId: string, peer: string, version: number) => ({
   lamport: i,
   offset: i,
   stream: 'a',
   tags: toStringArray(settingsAppTagFn(appId)),
   timestamp: Date.now(),
   payload: {
-    eventType: 'settingsConfigApplied',
+    eventType: 'settingsApplied',
     appId,
     peer,
     version,
-  } as SettingsConfigAppliedEvent,
+  } as SettingsAppliedEvent,
 })
 
 const toStringArray = (t: Tags<any>) =>
