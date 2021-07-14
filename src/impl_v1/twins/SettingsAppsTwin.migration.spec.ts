@@ -1,39 +1,55 @@
 import { Migration, migrateSettings } from './SettingsAppsTwin.migration'
 
-describe('SettingsAppsTwin.migration', () => {
+describe('SettingsAppsTwin-migration', () => {
+  const addMissingProperties = Migration.addMissingProperties()
+  const resetToDefault = Migration.resetToDefault()
+
   describe('migrateSettings', () => {
     it('reset to default migration', () => {
-      expect(
-        migrateSettings(currentSettingsA, Migration.resetToDefault(), newDefaultSettingsA),
-      ).toStrictEqual(resultResetSettingsA)
+      expect(migrateSettings(currentSettingsA, resetToDefault, newDefaultSettingsA)).toStrictEqual(
+        resultResetSettingsA,
+      )
     })
     it('add missing properties migration', () => {
       expect(
-        migrateSettings(currentSettingsA, Migration.addMissingProperties(), newDefaultSettingsA),
+        migrateSettings(currentSettingsA, addMissingProperties, newDefaultSettingsA),
       ).toStrictEqual(resultAddMissingPropertiesA)
     })
     it('add more items to an array', () => {
       expect(
-        migrateSettings(currentSettingsB, Migration.addMissingProperties(), newDefaultSettingsB),
+        migrateSettings(currentSettingsB, addMissingProperties, newDefaultSettingsB),
       ).toStrictEqual(resultAddMissingPropertiesMoreItemsInArrayB)
     })
     it('array as setting', () => {
       expect(
-        migrateSettings(currentSettingsC, Migration.addMissingProperties(), newDefaultSettingsC),
+        migrateSettings(currentSettingsC, addMissingProperties, newDefaultSettingsC),
       ).toStrictEqual(resultWorkWithArraysC)
     })
     it('incompatible types should be replaced', () => {
-      expect(migrateSettings(0, Migration.addMissingProperties(), 'a')).toStrictEqual('a')
-      expect(migrateSettings({ a: 1 }, Migration.addMissingProperties(), 'a')).toStrictEqual('a')
-      expect(migrateSettings({ a: 1 }, Migration.addMissingProperties(), { b: 1 })).toStrictEqual({
+      expect(migrateSettings(0, addMissingProperties, 'a')).toStrictEqual('a')
+      expect(migrateSettings({ a: 1 }, addMissingProperties, 'a')).toStrictEqual('a')
+      expect(migrateSettings({ a: 1 }, addMissingProperties, { b: 1 })).toStrictEqual({
         b: 1,
       })
     })
     it('incompatible types should be replaced', () => {
-      expect(migrateSettings(0, Migration.addMissingProperties(), 'a')).toStrictEqual('a')
-      expect(migrateSettings({ a: 1 }, Migration.addMissingProperties(), 'a')).toStrictEqual('a')
-      expect(migrateSettings({ a: 1 }, Migration.addMissingProperties(), null)).toStrictEqual(null)
-      expect(migrateSettings(null, Migration.addMissingProperties(), ['1'])).toStrictEqual(['1'])
+      expect(migrateSettings(0, addMissingProperties, 'a')).toStrictEqual('a')
+      expect(migrateSettings({ a: 1 }, addMissingProperties, 'a')).toStrictEqual('a')
+      expect(migrateSettings({ a: 1 }, addMissingProperties, null)).toStrictEqual(null)
+      expect(migrateSettings(null, addMissingProperties, ['1'])).toStrictEqual(['1'])
+    })
+    it('migrate with script, simple', () => {
+      const migration = Migration.script((state) => `OK,${state}`)
+      expect(migrateSettings(0, migration, 'def')).toStrictEqual('OK,0')
+    })
+    it('migrate with script + add Missing props', () => {
+      const migration = Migration.script((state) => ({
+        a: `OK,${state}`,
+      }))
+      expect(migrateSettings(0, migration, { a: 'a', b: 'def' })).toStrictEqual({
+        a: 'OK,0',
+        b: 'def',
+      })
     })
   })
 })

@@ -50,7 +50,7 @@ describe('integration', () => {
 
     // define settings and validate if peers applied them
     const applyDefinitionRes = await appSettings.defineSettings(
-      JSON.stringify({
+      {
         type: 'object',
         properties: {
           a: { type: 'integer' },
@@ -58,7 +58,7 @@ describe('integration', () => {
         },
         required: ['a', 'b'],
         additionalProperties: false,
-      }),
+      },
       { a: 0, b: 1 },
       { a: 'b', b: 'a' },
     )

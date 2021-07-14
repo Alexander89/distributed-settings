@@ -5,7 +5,7 @@ export const defaultSettingsA = {
 }
 export type DefaultSettingsA = typeof defaultSettingsA
 
-export const schemaA = JSON.stringify({
+export const schemaA = {
   type: 'object',
   properties: {
     a: { type: 'integer' },
@@ -25,7 +25,7 @@ export const schemaA = JSON.stringify({
   },
   required: ['a', 'b', 'c'],
   additionalProperties: false,
-})
+}
 
 export const stateAfterA = {
   defined: true,

@@ -11,7 +11,7 @@ export type SettingsState<T> =
       defined: true
       version: number
       setting: T
-      schema: Schema<T>
+      schema: Schema
       lastUpdate: number
     }
   | {
@@ -20,7 +20,7 @@ export type SettingsState<T> =
 
 export type AppsState<T> = {
   peers: Record<string, number>
-  schema: string | undefined
+  schema: true | object
   defaultSettings: T | undefined
   migrations: Migration
 }
@@ -34,7 +34,7 @@ export type SettingsAppliedEvent = {
 export type SettingsDefineEvent<T> = {
   eventType: 'settingsDefine'
   appId: string
-  schema: Schema<T>
+  schema: Schema
   defaultSettings: T
   migration: Migration
 }
@@ -152,13 +152,19 @@ export const AppSettingsTwins = {
       migrations: {
         type: 'resetToDefault',
       },
-      schema: undefined,
+      schema: true,
     },
     where: settingsAppTagFn(appId),
     onEvent: (state, event) => {
       switch (event.eventType) {
         case 'settingsApplied':
           state.peers[event.peer] = event.version
+          return state
+        case 'settingsDefine':
+          state.defaultSettings = event.defaultSettings
+          state.migrations = event.migration
+          state.schema = event.schema
+          console.log(state)
           return state
       }
       return state

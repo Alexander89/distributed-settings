@@ -11,10 +11,14 @@ import { MigrationScript, Migration as MigrationType } from '../..'
 import { isArray, isNull, isObject, isSameType } from './SettingsAppsTwin.utils'
 
 export const Migration = {
-  of: <T, C>(migration: MigrationScript<T, C>): MigrationType => {
+  script: <C, T>(
+    migration: MigrationScript<C, T>,
+    addMissingProperties: boolean = true,
+  ): MigrationType => {
     return {
       type: 'migrationScript',
       script: migration.toString(),
+      addMissingProperties,
     }
   },
   addMissingProperties: (): MigrationType => ({
@@ -65,44 +69,7 @@ export const addMigrateProperties = <T>(currentSettings: unknown, resSettingsRef
   } else {
     return isSameType(currentSettings, resSettingsRef) ? currentSettings : resSettingsRef
   }
-
-  // Object.entries(currentSettings).forEach(([key, value]) => {
-  //   if (value === undefined) {
-  //     resSettingsRef[key] = {} as any
-  //     migrateSub(oldSettings, value, resSettingsRef[key] as Record<string, unknown>)
-  //   } else if (typeof resSettingsRef[key] === 'object') {
-  //     migrateSub(oldSettings, value, resSettingsRef[key] as Record<string, unknown>)
-  //   } else {
-  //     console.log(value, resSettingsRef[key])
-  //     resSettingsRef[key] = eval(`oldSetting.${migration[key]}`)
-  //   }
-  // })
-  // return resSettingsRef
 }
-
-/*
-export const merge = (
-  currentSettings: unknown, // Record<string, unknown> | Array<unknown>,
-  resSettingsRef: unknown, // Record<string, unknown> | Array<unknown>,
-): any => {
-  if (isArray(resSettingsRef)) {
-    return resSettingsRef.map(resSettingsRef)
-  } else if (isNull(resSettingsRef)) {
-  } else if (isObject(resSettingsRef)) {
-  } else {
-    return resSettingsRef
-  }
-  Object.entries(currentSettings).forEach(([key, value]) => {
-    if (value === undefined) {
-      return merge(value, resSettingsRef[key])
-    } else if (typeof resSettingsRef[key] === 'object') {
-      return merge(value, resSettingsRef[key])
-    } else {
-      console.log(currentSettings, resSettingsRef)
-    }
-  })
-}
-*/
 
 export const migrateSettings = <C, N>(
   setting: C,
@@ -119,8 +86,11 @@ export const migrateSettings = <C, N>(
       return addMigrateProperties(setting, defSettings)
     }
     case 'migrationScript': {
-      console.error('do migrationScript')
-      return defSettings
+      const script = eval(migration.script)
+      const migrated: N = script(setting, defSettings)
+      return migration.addMissingProperties
+        ? migrateSettings(migrated, Migration.addMissingProperties(), defSettings)
+        : migrated
     }
     default:
       return defSettings
@@ -133,7 +103,7 @@ export const handleDefineSettings = <T>(
   lastUpdate: number,
 ): SettingsState<T> => {
   try {
-    const validate = new Ajv().validateSchema(JSON.parse(event.schema))
+    const validate = new Ajv().validateSchema(event.schema)
     if (validate) {
       if (!state.defined) {
         return {
@@ -168,7 +138,7 @@ export const handleSettingsSet = <T>(
 ): SettingsState<T> => {
   if (state.defined) {
     try {
-      const validate = new Ajv().validateSchema(JSON.parse(state.schema))
+      const validate = new Ajv().validateSchema(state.schema)
       if (validate) {
         event.setting = event.setting
         state.version += 1
@@ -208,7 +178,7 @@ export const handleSettingsSetPartial = <T>(
         settingsPtr[last] = event.value
       }
     })
-    const validate = new Ajv().compile(JSON.parse(state.schema))
+    const validate = new Ajv().compile(state.schema)
     const valid = validate(modSetting)
 
     if (!valid) {

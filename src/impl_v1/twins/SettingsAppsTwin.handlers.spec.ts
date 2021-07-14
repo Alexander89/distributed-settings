@@ -6,12 +6,12 @@ import {
   schemaA,
   stateAfterA,
   stateAfterB,
-} from './SettingsAppsTwin.handlers.spec.data'
+} from './SettingsAppsTwin.handlers.test'
 import { Migration } from './SettingsAppsTwin.migration'
 
 const appId = 'testApp'
 
-describe('SettingsAppsTwin.handlers', () => {
+describe('SettingsAppsTwin-handlers', () => {
   describe('handleDefineSettings', () => {
     it('handleDefineSettings first Time (no migration)', () => {
       const initState: SettingsState<DefaultSettingsA> = { defined: false }
@@ -44,6 +44,7 @@ describe('SettingsAppsTwin.handlers', () => {
     it('handleDefineSettings validate Schema. don`t update definition', () => {
       const errorSpy = spyOn(console, 'error')
       const initState: SettingsState<DefaultSettingsA | string> = stateAfterA
+      // @ts-expect-error
       const event = {
         eventType: 'settingsDefine',
         appId,
@@ -56,5 +57,4 @@ describe('SettingsAppsTwin.handlers', () => {
       expect(errorSpy).toHaveBeenCalledTimes(1)
     })
   })
-  describe('handleDefineSettings', () => {})
 })

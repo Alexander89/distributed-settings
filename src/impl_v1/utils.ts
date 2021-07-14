@@ -5,12 +5,10 @@ import bEx from 'brace-expansion'
 
 export const getCurrentState = <S, E>(actyx: Pond, fish: Fish<S, E>): Promise<S> =>
   new Promise((res) => {
-    const done = actyx.observe(fish, (s) =>
-      setImmediate(() => {
-        done()
-        res(s)
-      }),
-    )
+    const done = actyx.observe(fish, (s) => {
+      done()
+      res(s)
+    })
   })
 
 export const collectPeerVersionsOnce = async (parsedPeers: string[], actyx: Pond, appId: string) =>
@@ -101,7 +99,6 @@ export const checkForUpdate = (
     }, timeout)
 
     cancelCollectPeerVersions = collectPeerVersions(peers, actyx, appId, (newState) => {
-      // console.log(peers, appId, currentState, newState)
       lastUpdatesState = newState
       if (allLargerThan(sub(newState, currentState), 0)) {
         res({

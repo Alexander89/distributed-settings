@@ -17,9 +17,10 @@ Pond.default({
   console.log('open settings for app1')
 
   const peers = await appSettings.listPeers()
+
   console.log('found peers', peers)
 
-  const cancelSub = appSettings.subscribe(hostname(), (s) => {
+  appSettings.subscribe(hostname(), (s) => {
     console.log('new settings', s)
     return true
   })
@@ -46,7 +47,13 @@ Pond.default({
   console.log(
     'create new version of the schema, with default for new peers and migration for existing settings',
     await appSettings.defineSettings(
-      'Schema{"abc": {i : number, y: text}}',
+      {
+        type: 'object',
+        properties: {
+          a: { type: 'integer' },
+          b: { type: 'integer' },
+        },
+      },
       { a: 0, b: 0 },
       { a: 'a', b: 'a' },
     ),

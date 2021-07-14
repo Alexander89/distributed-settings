@@ -34,7 +34,13 @@ Pond.default({
   console.log(
     'migrate all local known peers-settings and verify if they result in valid settings to the schema',
     await appSettings.verifySettings(
-      'Schema{"abc": {i : number, y: text}}',
+      {
+        type: 'object',
+        properties: {
+          a: { type: 'integer' },
+          b: { type: 'integer' },
+        },
+      },
       { abc: { i: 1, y: 2 } },
       { abc: { i: 'abc.y' } },
     ),
@@ -43,7 +49,13 @@ Pond.default({
   console.log(
     'create new version of the schema, with default for new peers and migration for existing settings',
     await appSettings.defineSettings(
-      'Schema{"abc": {i : number, y: text}}',
+      {
+        type: 'object',
+        properties: {
+          a: { type: 'integer' },
+          b: { type: 'integer' },
+        },
+      },
       { abc: { i: 1, y: 2 } },
       { abc: { i: 'abc.y' } },
     ),

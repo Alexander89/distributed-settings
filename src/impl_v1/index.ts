@@ -33,40 +33,47 @@ const appSettings =
       new Promise((res, rej) => {
         const done = actyx.observe(
           AppSettingsTwins.app(appId),
-          (state) =>
-            setImmediate(() => {
-              done()
-              res(state.peers)
-            }),
+          (state) => {
+            done()
+            res(state.peers)
+          },
           rej,
         )
       })
 
     const verifySettings = <T>(
-      _schema: Schema<T>,
+      _schema: Schema,
       _defaultSetting: T,
       _migration: unknown,
     ): Promise<Record<string, boolean>> => Promise.resolve({})
 
     const defineSettings = async <T>(
-      schema: Schema<T>,
+      schema: Schema,
       defaultSetting: T,
       migration: unknown,
       timeout: number = defaultTimeout,
     ): Promise<PeerResponse> => {
+      console.log(schema, defaultSetting, migration, timeout)
       const res = await verifySettings(schema, defaultSetting, migration)
       if (!Object.values(res).every((v) => v === true)) {
         throw new Error('setting not valide for all peers: ' + JSON.stringify(res))
       }
       const peers = await listPeers()
+
+      console.log(schema, defaultSetting, migration)
       const currentState = await collectPeerVersionsOnce(peers, actyx, appId)
       AppSettingsTwins.emitSettingsDefine(actyx.emit, appId, schema, defaultSetting, migration)
       return checkForUpdate(actyx, appId, currentState, timeout)
     }
 
-    const getSchema = <T>(): Promise<Schema<T> | undefined> =>
+    const getSchema = <T>(): Promise<Schema | undefined> =>
       getCurrentState(actyx, AppSettingsTwins.app<T>(appId))
         .then((state) => state.schema)
+        .catch(() => undefined)
+
+    const getDefaultSettings = <T>(): Promise<T | undefined> =>
+      getCurrentState(actyx, AppSettingsTwins.app<T>(appId))
+        .then((state) => state.defaultSettings)
         .catch(() => undefined)
 
     const subscribe = <T>(
@@ -84,11 +91,13 @@ const appSettings =
         }
       })
 
-    const get = <T>(peer: string): Promise<T | undefined> =>
+    const get = <T>(peer: string, doNotAck: boolean = false): Promise<T | undefined> =>
       getCurrentState(actyx, AppSettingsTwins.peer<T>({ appId, peer }))
         .then((state) => {
           if (state.defined) {
-            AppSettingsTwins.emitSettingsApplied(actyx.emit, appId, peer, state.version)
+            if (doNotAck === false) {
+              AppSettingsTwins.emitSettingsApplied(actyx.emit, appId, peer, state.version)
+            }
             return state.setting
           } else {
             return undefined
@@ -135,6 +144,7 @@ const appSettings =
       defineSettings,
       verifySettings,
       getSchema,
+      getDefaultSettings,
       subscribe,
       set,
       unset,

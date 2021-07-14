@@ -5,8 +5,8 @@ import { CancelSubscription, Pond } from '@actyx/pond'
  */
 export type SettingsFactory = (actyx: Pond) => Settings
 
-export type Schema<T> = string
-export type MigrationScript<T, C> = (currentSettings: C) => T
+export type Schema = true | object
+export type MigrationScript<C, T> = (currentSettings: C, newDefault: T) => T
 export type Migration =
   | {
       type: 'addMissingProperties'
@@ -14,6 +14,7 @@ export type Migration =
   | {
       type: 'migrationScript'
       script: string
+      addMissingProperties: boolean
     }
   | {
       type: 'resetToDefault'
@@ -71,7 +72,11 @@ export type AppSettings<T> = {
   /**
    * Returns the schema of the app
    */
-  getSchema: <T>() => Promise<Schema<T> | undefined>
+  getSchema: () => Promise<Schema | undefined>
+  /**
+   * Returns the default settings of the app
+   */
+  getDefaultSettings: () => Promise<T | undefined>
   /**
    * define the first/a new version for the current application. It includes the default
    * settings, a schema and a migration to update the current version if exists
@@ -83,13 +88,13 @@ export type AppSettings<T> = {
    * @returns PeerResponse with 'successful' | 'partial' | 'noReply' feedback
    */
   defineSettings: (
-    schema: Schema<T>,
+    schema: Schema,
     defaultSetting: T,
     migration: unknown,
     timeout?: number,
   ) => Promise<PeerResponse>
   verifySettings: (
-    schema: Schema<T>,
+    schema: Schema,
     defaultSetting: T,
     migration: unknown,
   ) => Promise<Record<string, boolean>>
@@ -132,7 +137,7 @@ export type AppSettings<T> = {
    * @param peers local peer name
    * @returns settings or undefined if no settings are defined
    */
-  get: (peer: string) => Promise<T | undefined>
+  get: (peer: string, doNotAck?: boolean) => Promise<T | undefined>
 }
 
 /**

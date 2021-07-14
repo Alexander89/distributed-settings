@@ -15,7 +15,7 @@ export const handleDefineSettings = <T>(
   lastUpdate: number,
 ): SettingsState<T> => {
   try {
-    const validate = new Ajv().validateSchema(JSON.parse(event.schema))
+    const validate = new Ajv().validateSchema(event.schema)
     if (validate) {
       if (!state.defined) {
         return {
@@ -50,7 +50,7 @@ export const handleSettingsSet = <T>(
 ): SettingsState<T> => {
   if (state.defined) {
     try {
-      const validate = new Ajv().validateSchema(JSON.parse(state.schema))
+      const validate = new Ajv().validateSchema(state.schema)
       if (validate) {
         event.setting = event.setting
         state.version += 1
@@ -90,7 +90,7 @@ export const handleSettingsSetPartial = <T>(
         settingsPtr[last] = event.value
       }
     })
-    const validate = new Ajv().compile(JSON.parse(state.schema))
+    const validate = new Ajv().compile(state.schema)
     const valid = validate(modSetting)
 
     if (!valid) {

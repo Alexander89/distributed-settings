@@ -1,6 +1,6 @@
 import { isArray, isNull, isObject, isSameType } from './SettingsAppsTwin.utils'
 
-describe('SettingsAppsTwin.utils', () => {
+describe('SettingsAppsTwin-utils', () => {
   it('isArray', () => {
     expect(isArray([])).toBeTruthy()
     expect(isArray('')).toBeFalsy()
