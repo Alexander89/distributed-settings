@@ -192,6 +192,7 @@ export const AppSettingsTwins = {
         case 'settingsSetPartial':
           return handleSettingsSetPartial(state, event)
       }
+      console.log('event ignored', event)
       return state
     },
   }),

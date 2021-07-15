@@ -78,10 +78,14 @@ const appSettings =
 
     const subscribe = <T>(
       peer: string,
-      sub: (settings: T | undefined) => boolean,
+      sub: (settings: T | undefined) => boolean | Promise<boolean>,
     ): CancelSubscription =>
-      actyx.observe(AppSettingsTwins.peer<T>({ appId, peer }), (state) => {
-        if (sub(state.defined ? state.setting : undefined)) {
+      actyx.observe(AppSettingsTwins.peer<T>({ appId, peer }), async (state) => {
+        let res = sub(state.defined ? state.setting : undefined)
+        if (typeof res !== 'boolean') {
+          res = await res
+        }
+        if (res) {
           AppSettingsTwins.emitSettingsApplied(
             actyx.emit,
             appId,

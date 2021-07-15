@@ -52,8 +52,9 @@ export const handleSettingsSet = <T>(
     try {
       const validate = new Ajv().validateSchema(state.schema)
       if (validate) {
-        event.setting = event.setting
+        state.setting = event.setting
         state.version += 1
+        return state
       } else {
         console.error('failed to validate settings')
         return state
@@ -63,6 +64,7 @@ export const handleSettingsSet = <T>(
       return state
     }
   }
+  console.error('set without defined', state)
   return state
 }
 
@@ -74,22 +76,10 @@ export const handleSettingsSetPartial = <T>(
     const scopes = bEx(event.scope)
     // console.log('set partial ', scopes, event.value)
     const modSetting = clone(state.setting)
-    scopes.forEach((scope) => {
-      let settingsPtr: any = modSetting
-      const path = scope.split('.')
-      const last = path.pop()
-      for (const prop of path) {
-        const next = settingsPtr[prop]
-        if (next) {
-          settingsPtr = next
-        } else {
-          break
-        }
-      }
-      if (settingsPtr && last) {
-        settingsPtr[last] = event.value
-      }
-    })
+    for (let scope of scopes) {
+      scope = scope.startsWith('.') ? scope.substr(1) : scope
+      eval(`modSetting${scope.startsWith('.') ? scope : '.' + scope} = event.value`)
+    }
     const validate = new Ajv().compile(state.schema)
     const valid = validate(modSetting)
 

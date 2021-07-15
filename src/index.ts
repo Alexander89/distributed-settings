@@ -128,7 +128,10 @@ export type AppSettings<T> = {
    * @param cb handler to receive the updated settings. If it returns true, the settingsAppliedEvent get emitted. It is highly recommended, that only the settings receiver (single node) should return true.
    * @returns function to cancel the subscription
    */
-  subscribe: (peer: string, cb: (settings: T | undefined) => boolean) => CancelSubscription
+  subscribe: (
+    peer: string,
+    cb: (settings: T | undefined) => boolean | Promise<boolean>,
+  ) => CancelSubscription
   /**
    * Get the settings of an given peer. After that, the settingsAppliedEvent is emitted.
    *
