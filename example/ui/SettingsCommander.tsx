@@ -14,6 +14,8 @@ import {
 } from '@material-ui/core'
 import { useStyle } from './theme'
 import { Editor } from './Editor'
+import Ajv from 'ajv'
+import { ValidSettings } from './ValidSettings'
 
 type Props = {
   appId: string
@@ -26,12 +28,52 @@ export const SettingsCommander = ({ appId, appSettings, timeout }: Props) => {
   const [defaultSettings, setDefaultSettings] = React.useState<Readonly<unknown>>()
   const [schema, setSchema] = React.useState<any>({})
   const [migration, setMigration] = React.useState<MigrationMethods>('reset')
+  const [schemaValid, setSchemaValid] = React.useState(false)
+  const [settingsInputValid, setSettingsInputValid] = React.useState(false)
+  const [schemaInputValid, setSchemaInputValid] = React.useState(false)
   //const [migrationScript, setMigrationScript] = React.useState('(state) => state')
   const [openFeedback, setOpenFeedback] = React.useState<Promise<PeerResponse> | undefined>(
     undefined,
   )
 
   const classes = useStyle()
+
+  const handleSchemaChanged = (text: string) => {
+    try {
+      setSchema(JSON.parse(text))
+      setSchemaInputValid(true)
+    } catch (_) {
+      setSchemaInputValid(false)
+    }
+  }
+  const handleSettingsChanged = (text: string) => {
+    try {
+      setDefaultSettings(JSON.parse(text))
+      setSettingsInputValid(true)
+    } catch (_) {
+      setSettingsInputValid(false)
+    }
+  }
+
+  const valid = (): string => {
+    if (schemaInputValid && settingsInputValid && schemaValid) {
+      return 'valid'
+    } else if (!schemaInputValid) {
+      return 'schema invalid'
+    } else if (!settingsInputValid) {
+      return 'settings format invalid'
+    } else if (!schemaValid) {
+      return "Doesn't match schema"
+    } else {
+      return 'invalid'
+    }
+  }
+
+  React.useEffect(() => {
+    let validSettings = new Ajv().compile(schema)(defaultSettings)
+    console.log('useEffect', validSettings, schema, validSettings)
+    setSchemaValid(validSettings == true)
+  }, [schema, defaultSettings])
 
   React.useEffect(() => {
     appSettings.getSchema().then((s) => console.log('getSchema', s))
@@ -69,9 +111,8 @@ export const SettingsCommander = ({ appId, appSettings, timeout }: Props) => {
                   : JSON.stringify(defaultSettings, undefined, 2)
                 : 'not Set'
             }
-            height={150}
-            width={650}
-            onFocusLost={(text) => setDefaultSettings(JSON.parse(text))}
+            style={{ height: 150, maxWidth: '100%', width: '650' }}
+            onChanged={(t) => handleSettingsChanged(t)}
           />
         </Box>
       </Box>
@@ -87,9 +128,8 @@ export const SettingsCommander = ({ appId, appSettings, timeout }: Props) => {
                   : JSON.stringify(schema, undefined, 2)
                 : 'true'
             }
-            height={150}
-            width={650}
-            onFocusLost={(text) => setSchema(JSON.parse(text))}
+            style={{ height: 150, maxWidth: '100%', width: '650' }}
+            onChanged={(t) => handleSchemaChanged(t)}
           />
         </Box>
       </Box>
@@ -124,6 +164,9 @@ export const SettingsCommander = ({ appId, appSettings, timeout }: Props) => {
       >
         Set
       </Button>
+      <Box display="inline" style={{ marginLeft: 24 }}>
+        <ValidSettings valid={valid()} />
+      </Box>
       {openFeedback && (
         <CommandFeedback
           onClose={() => setOpenFeedback(undefined)}

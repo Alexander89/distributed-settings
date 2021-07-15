@@ -21,7 +21,7 @@ export const useStyle = makeStyles((_theme) =>
     },
     settingsPreview: {
       border: '1px solid gray',
-      backgroundColor: 'white',
+      backgroundColor: '#ededed',
       padding: '12px 24px',
     },
     drawItem: {

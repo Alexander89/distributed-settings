@@ -29,8 +29,8 @@ export const AppSettingsMain = ({ appId, settings, timeout }: Props) => {
           }}
           aria-label="disabled tabs example"
         >
-          <Tab value="preview" label="Preview Settings" />
-          <Tab value="set" label="Set Settings" />
+          <Tab value="preview" label="Inspect" />
+          <Tab value="set" label="Set" />
           <Tab value="define" label="Definition" />
         </Tabs>
       </Paper>

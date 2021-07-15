@@ -4,9 +4,8 @@ import * as monaco from 'monaco-editor'
 type Props = {
   file: string
   diff?: string
-  height: number | string
-  width: number | string
-  onFocusLost: (text: string) => void
+  style?: React.CSSProperties
+  onChanged: (text: string) => void
 }
 
 const createEditor = (div: HTMLDivElement, value: string) =>
@@ -31,7 +30,7 @@ self.MonacoEnvironment = {
   },
 }
 
-export const Editor = ({ file, diff, height, width, onFocusLost }: Props) => {
+export const Editor = ({ file, diff, style, onChanged }: Props) => {
   const monacoRef = React.useRef<HTMLDivElement>(null)
   const [editor, setEditor] = React.useState<monaco.editor.IStandaloneCodeEditor | undefined>(
     undefined,
@@ -40,11 +39,20 @@ export const Editor = ({ file, diff, height, width, onFocusLost }: Props) => {
     monaco.editor.IStandaloneDiffEditor | undefined
   >()
 
-  const onBlur = () => {
+  const getCurrentModel = (): monaco.editor.ITextModel | undefined => {
     if (editor && editor.getModel && editor.getModel()) {
-      onFocusLost(editor.getModel()!.getValue())
+      return editor.getModel() || undefined
     } else if (diffEditor && diffEditor.getModel && diffEditor.getModel()) {
-      onFocusLost(diffEditor.getModel()!.modified.getValue())
+      return diffEditor.getModel()?.modified
+    } else {
+      return undefined
+    }
+  }
+
+  const onUpdate = () => {
+    const model = getCurrentModel()
+    if (model) {
+      onChanged(model.getValue())
     }
   }
 
@@ -66,8 +74,6 @@ export const Editor = ({ file, diff, height, width, onFocusLost }: Props) => {
         setEditor(undefined)
         editor = ed
       }
-      // diff === undefined
-      //   ? createEditor(monacoRef.current, file)
 
       const resizeFn = () => editor?.layout()
       window.addEventListener('resize', resizeFn)
@@ -81,13 +87,41 @@ export const Editor = ({ file, diff, height, width, onFocusLost }: Props) => {
   }, [monacoRef === null, diff === undefined])
 
   React.useEffect(() => {
+    const model = getCurrentModel()
+    if (model) {
+      let last = ''
+      let active = false
+      const debouncedPublish = setInterval(() => {
+        const next = model.getValue()
+        if (next === last) {
+          active && onUpdate()
+          active = false
+        } else {
+          active = true
+          last = next
+        }
+      }, 250)
+      return () => {
+        clearInterval(debouncedPublish)
+      }
+    }
+    return () => undefined
+  }, [getCurrentModel()])
+
+  React.useEffect(() => {
+    const sel = editor?.getSelection()
+
     if (editor && editor.getModel && editor.getModel()) {
       editor.getModel()!.setValue(file)
     } else if (diffEditor && diffEditor.getModel && diffEditor.getModel() && diff !== undefined) {
       diffEditor.getModel()!.original.setValue(file)
       diffEditor.getModel()!.modified.setValue(diff)
     }
+
+    if (sel) {
+      editor?.setSelection(sel)
+    }
   }, [editor, diffEditor, file, diff])
 
-  return <div ref={monacoRef} style={{ height, width }} onBlur={onBlur}></div>
+  return <div ref={monacoRef} style={style} onBlur={onUpdate}></div>
 }

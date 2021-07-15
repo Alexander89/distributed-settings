@@ -2,7 +2,7 @@
   "name": "settings",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.ts",
   "scripts": {
     "test": "TZ=UTC jest --forceExit --config ./jest.config.js",
     "test:watch": "TZ=UTC jest --watch --config ./jest.config.js",
@@ -14,7 +14,7 @@
     "example:simple:start": "nodemon --watch ./example --watch ./src --exec ts-node example/simple.ts",
     "example:simple:build": "tsc example/simple.ts --outDir build/settings --esModuleInterop --skipLibCheck",
     "example:ui:start": "parcel example/ui/index.html --dist-dir build/example-ui/release",
-    "example:ui:build": "parcel build build/example-ui/index.html",
+    "example:ui:build": "parcel build example/ui/index.html --dist-dir build/example-ui/index.html",
     "monaco:build": "npm run monaco:build:json build/example-ui/release && npm run monaco:build:worker build/example-ui/release",
     "monaco:build:json": "parcel build ./node_modules/monaco-editor/esm/vs/language/json/json.worker.js --no-source-maps --dist-dir ",
     "monaco:build:worker": "parcel build ./node_modules/monaco-editor/esm/vs/editor/editor.worker.js --no-source-maps --dist-dir "
