@@ -3,7 +3,9 @@ import { AppSettings, PeerResponse } from '../../src'
 import { Box, Button, Grid, TextField, Typography } from '@material-ui/core'
 import { CommandFeedback } from './CommandFeedback'
 import { DataType, ScopeSelector } from './ScopeSelector'
-import { Autocomplete } from '@material-ui/lab'
+import { Autocomplete, Alert } from '@material-ui/lab'
+import bEx from 'brace-expansion'
+import deepEqual from 'deep-equal'
 
 type Props = {
   appId: string
@@ -17,6 +19,7 @@ export const SettingsSetPartial = ({ appId, timeout, appSettings, peer }: Props)
   const [value, setValue] = React.useState<any>(undefined)
   const [currentSettings, setCurrentSettings] = React.useState<any>()
   const [dataType, setDataType] = React.useState<DataType>('JSON')
+  const [allSame, setAllSame] = React.useState(true)
   const [openFeedback, setOpenFeedback] = React.useState<Promise<PeerResponse> | undefined>(
     undefined,
   )
@@ -44,21 +47,31 @@ export const SettingsSetPartial = ({ appId, timeout, appSettings, peer }: Props)
   }
 
   React.useEffect(() => {
-    if (peer) {
-      const cancel = appSettings.subscribe(peer, (s) => {
-        console.log('settings.subscribe', s)
-        setCurrentSettings(s === undefined ? 'not set' : s)
-        return false
+    const peers = bEx(peer)
+
+    if (peers.length > 1) {
+      Promise.all(peers.map((p) => appSettings.get(p, true))).then((settings) => {
+        setAllSame(settings.every((s) => deepEqual(s, settings[0])))
+        setCurrentSettings(settings[0])
       })
-      return () => cancel()
+    } else if (peers.length === 1) {
+      appSettings.get(peers[0], true).then((setting) => {
+        setAllSame(true)
+        setCurrentSettings(setting)
+      })
     } else {
       setCurrentSettings('')
-      return () => undefined
     }
   }, [peer, appId])
 
   return (
     <Box>
+      {!allSame && (
+        <Alert severity="info">
+          The selected peers have different settings. You only see the settings of the first
+          matching peer in the preview.
+        </Alert>
+      )}
       <Grid container>
         <Grid item md={6}>
           <Typography>Settings</Typography>

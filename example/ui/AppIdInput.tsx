@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Settings } from '../../src'
-import { Paper, Typography, Box, TextField } from '@material-ui/core'
+import { Paper, Typography, Box, TextField, Button } from '@material-ui/core'
 import { Autocomplete } from '@material-ui/lab'
 import { useStyle } from './theme'
 
@@ -44,9 +44,9 @@ export const AppIdInput = ({
       <Paper className={classes.paper}>
         <Typography variant="h6">Known app ids:</Typography>
         {knownApps.map((app) => (
-          <Typography key={app} className={classes.appSelect} onClick={() => onAppIdChanged(app)}>
+          <Button color="primary" key={app} onClick={() => onAppIdChanged(app)}>
             {app}
-          </Typography>
+          </Button>
         ))}
       </Paper>
       <Paper className={classes.paper}>

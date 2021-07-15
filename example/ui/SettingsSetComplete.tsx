@@ -44,8 +44,8 @@ export const SettingsSetComplete = ({ peer, appId, appSettings, timeout }: Props
     <Box>
       {!allSame && (
         <Alert severity="warning">
-          Currently, the peers have different settings. This will overwrite them complete. Probably
-          you want to use the "partial settings" method
+          The selected peers have different settings. This action will overwrite them complete all.
+          Probably you want to use the "partial settings" method.
         </Alert>
       )}
       <Box>

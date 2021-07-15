@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { AppSettings } from '../../src'
-import { TextField, Paper, Typography, Box } from '@material-ui/core'
+import { TextField, Paper, Typography, Box, Button, Grid } from '@material-ui/core'
+import { Autocomplete } from '@material-ui/lab'
 import { useStyle } from './theme'
 
 type Props = {
@@ -32,33 +33,39 @@ export const SettingsPreview = ({ appId, appSettings }: Props) => {
 
   React.useEffect(() => {
     appSettings.listPeers().then(setKnownPeers)
-  }, [])
+  }, [appId])
 
   return (
     <Paper className={classes.paper}>
-      <Typography variant="h6">Settings Preview</Typography>
-      <Box>
-        <TextField
-          label="Peer"
-          inputProps={{ 'aria-label': 'Peer' }}
-          value={peer}
-          onChange={({ target }) => setPeer(target.value)}
-        />
-      </Box>
-      <Box>
-        <Typography>Known peers</Typography>
-        <Box>
-          {knownPeers.map((name) => (
-            <Typography key={name} onClick={() => setPeer(name)}>
-              {name}
-            </Typography>
-          ))}
-        </Box>
-      </Box>
+      <Typography variant="h6">Settings Monitor</Typography>
+      <Grid container spacing={3}>
+        <Grid item md={3}>
+          <Autocomplete
+            id="AppId-demo"
+            freeSolo
+            options={[...knownPeers]}
+            value={peer}
+            onChange={(_, value) => value && setPeer(value)}
+            onInputChange={(_, value) => setPeer(value)}
+            renderInput={(params) => <TextField {...params} label="Peer" margin="normal" />}
+          />
+        </Grid>
+        <Grid item>
+          <Typography>Known peers</Typography>
+          <Box>
+            {knownPeers.map((name) => (
+              <Button color="primary" key={name} onClick={() => setPeer(name)}>
+                {name}
+              </Button>
+            ))}
+          </Box>
+        </Grid>
+      </Grid>
+
       <Box>
         <Typography>Settings</Typography>
-        <Box className={classes.paper}>
-          <Typography component="pre">{currentSettings}</Typography>
+        <Box className={classes.settingsPreview}>
+          <pre>{currentSettings}</pre>
         </Box>
       </Box>
     </Paper>

@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { AppSettings } from '../../src'
-import { Box, TextField, Paper, Typography, Tabs, Tab } from '@material-ui/core'
+import { Box, TextField, Paper, Typography, Tabs, Tab, Grid, Button } from '@material-ui/core'
+import { Autocomplete } from '@material-ui/lab'
 import { useStyle } from './theme'
 import bEx from 'brace-expansion'
 import { SettingsSetComplete } from './SettingsSetComplete'
@@ -17,6 +18,7 @@ type Mode = 'complete' | 'partial'
 export const SettingsSet = ({ appId, appSettings, timeout }: Props) => {
   const [peer, setPeer] = React.useState<string>('')
   const [knownMatchingPeers, setKnownMatchingPeers] = React.useState<string[]>([])
+  const [knownPeers, setKnownPeers] = React.useState<ReadonlyArray<string>>([])
   const [mode, setMode] = React.useState<Mode>('complete')
 
   const classes = useStyle()
@@ -29,21 +31,41 @@ export const SettingsSet = ({ appId, appSettings, timeout }: Props) => {
       .then(setKnownMatchingPeers)
   }, [appSettings, peer, appId])
 
+  React.useEffect(() => {
+    appSettings.listPeers().then(setKnownPeers)
+  }, [appId])
+
   return (
     <Paper className={classes.paper}>
       <Typography variant="h6">Settings Set</Typography>
-      <Box>
-        <TextField
-          label="Destination Peers"
-          inputProps={{ 'aria-label': 'Destination Peers' }}
-          value={peer}
-          onChange={({ target }) => setPeer(target.value)}
-        />
-        <Box>
+
+      <Grid container spacing={3}>
+        <Grid item md={3}>
+          <Autocomplete
+            id="AppId-demo"
+            freeSolo
+            options={[...knownPeers]}
+            value={peer}
+            onChange={(_, value) => value && setPeer(value)}
+            onInputChange={(_, value) => setPeer(value)}
+            renderInput={(params) => <TextField {...params} label="Peer" margin="normal" />}
+          />
+        </Grid>
+        <Grid item>
+          <Typography>Known peers</Typography>
+          <Box>
+            {knownPeers.map((name) => (
+              <Button color="primary" key={name} onClick={() => setPeer(name)}>
+                {name}
+              </Button>
+            ))}
+          </Box>
+        </Grid>
+        <Grid item>
           <Typography>Matching known peers</Typography>
           <Typography>{knownMatchingPeers.join(', ')}</Typography>
-        </Box>
-      </Box>
+        </Grid>
+      </Grid>
 
       <Paper square>
         <Tabs

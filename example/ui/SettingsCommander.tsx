@@ -58,7 +58,7 @@ export const SettingsCommander = ({ appId, appSettings, timeout }: Props) => {
     <Paper className={classes.paper}>
       <Typography variant="h6">Settings Commander</Typography>
 
-      <Box>
+      <Box margin={2}>
         <InputLabel id="settings-label">Default Settings</InputLabel>
         <Box>
           <Editor
@@ -76,7 +76,7 @@ export const SettingsCommander = ({ appId, appSettings, timeout }: Props) => {
         </Box>
       </Box>
 
-      <Box>
+      <Box margin={2}>
         <InputLabel id="schema-label">Schema</InputLabel>
         <Box>
           <Editor
@@ -94,7 +94,7 @@ export const SettingsCommander = ({ appId, appSettings, timeout }: Props) => {
         </Box>
       </Box>
 
-      <Box>
+      <Box margin={2}>
         <FormControl>
           <InputLabel id="select-migration-label">Migration</InputLabel>
           <Select

@@ -22,8 +22,7 @@ export const useStyle = makeStyles((_theme) =>
     settingsPreview: {
       border: '1px solid gray',
       backgroundColor: 'white',
-      padding: '24px 36px',
-      margin: '12px 12px',
+      padding: '12px 24px',
     },
     drawItem: {
       cursor: 'pointer',
