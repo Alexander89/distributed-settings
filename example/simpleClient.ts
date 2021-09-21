@@ -52,15 +52,14 @@ const schema = {
   },
   additionalProperties: true,
 }
-
+const appId = 'com.example.settings.client.test'
 Pond.default({
-  appId: 'com.example.settings.client.test',
+  appId,
   displayName: 'settings Test',
   version: '0.0.1',
 }).then(async (pond) => {
   console.log('----------    connector started     ------------------')
-  const appSettings = Settings(pond).app<AppSettings>('TestClient')
-
+  const appSettings = Settings(pond).app<AppSettings>(appId)
   appSettings.subscribe(hostname(), async (s) => {
     console.log('new settings', s)
     if (s) {
@@ -71,4 +70,12 @@ Pond.default({
       return false
     }
   })
+
+  // const settings = await appSettings.get()  // (pond.info().nodeId)
+
+  /*
+   * import { AppSettings } from '../src/impl_v1'
+   * AppSettings(pond, schema).on('update', (settings) => {})
+   */
+
 })
